@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace MockLite;
 
 internal class FuncSetupSequence<T, TResult> : IMethodSetup, ISetupSequence<T, TResult>
@@ -20,9 +18,8 @@ internal class FuncSetupSequence<T, TResult> : IMethodSetup, ISetupSequence<T, T
             try
             {
                 // Execute callback if present
-                if (step.ParameterCallback is not null)
-                    InvokeParameterCallback(step.ParameterCallback, args);
-                
+                step.ParameterCallback?.Invoke(args);
+
                 if (step.Exception != null)
                     throw step.Exception;
                 
@@ -33,30 +30,6 @@ internal class FuncSetupSequence<T, TResult> : IMethodSetup, ISetupSequence<T, T
                 // If callback throws, let it propagate unless we have a setup exception
                 throw;
             }
-        }
-    }
-    
-    private void InvokeParameterCallback(Action parameterCallback, object[] args)
-    {
-        try
-        {
-            var method = parameterCallback.Method;
-            var parameters = method.GetParameters();
-            
-            if (parameters.Length == 0)
-            {
-                parameterCallback.DynamicInvoke();
-            }
-            else if (parameters.Length <= args.Length)
-            {
-                var callbackArgs = new object[parameters.Length];
-                Array.Copy(args, callbackArgs, parameters.Length);
-                parameterCallback.DynamicInvoke(callbackArgs);
-            }
-        }
-        catch (TargetParameterCountException)
-        {
-            // Parameter count mismatch, skip callback
         }
     }
     
@@ -113,8 +86,9 @@ internal class FuncSetupSequence<T, TResult> : IMethodSetup, ISetupSequence<T, T
         if (_steps.Count > 0)
         {
             var lastStep = _steps.ToArray()[_steps.Count - 1];
-            lastStep.ParameterCallback = callback;
+            lastStep.ParameterCallback = _ => callback();
         }
+        
         return this;
     }
     

@@ -5,7 +5,7 @@ namespace MockLite;
 internal class FuncSetup<T, TResult> : IMethodSetup, ISetup<T, TResult>
 {
     private Func<TResult>? _callback;
-    private Action? _parameterCallback;
+    private Action<object[]>? _parameterCallback;
     private Exception? _exception;
     
     public object? Execute(object[] args)
@@ -13,9 +13,8 @@ internal class FuncSetup<T, TResult> : IMethodSetup, ISetup<T, TResult>
         try
         {
             // Execute parameter callback with arguments
-            if (_parameterCallback is not null)
-                InvokeParameterCallback(args);
-            
+            _parameterCallback?.Invoke(args);
+
             if (_exception is not null)
                 throw _exception;
             
@@ -28,30 +27,6 @@ internal class FuncSetup<T, TResult> : IMethodSetup, ISetup<T, TResult>
         }
     }
     
-    private void InvokeParameterCallback(object[] args)
-    {
-        try
-        {
-            // Use reflection to invoke the callback with the right number of parameters
-            var method = _parameterCallback?.Method;
-            var parameters = method?.GetParameters() ?? [];
-            
-            if (parameters.Length == 0)
-            {
-                _parameterCallback?.DynamicInvoke();
-            }
-            else if (parameters.Length <= args.Length)
-            {
-                var callbackArgs = new object[parameters.Length];
-                Array.Copy(args, callbackArgs, parameters.Length);
-                _parameterCallback?.DynamicInvoke(callbackArgs);
-            }
-        }
-        catch (TargetParameterCountException)
-        {
-            // Parameter count mismatch, skip callback
-        }
-    }
     
     public void Returns(TResult value)
         => _callback = () => value;
@@ -81,7 +56,7 @@ internal class FuncSetup<T, TResult> : IMethodSetup, ISetup<T, TResult>
     
     public ISetup<T, TResult> Callback(Action callback)
     {
-        _parameterCallback = callback;
+        _parameterCallback = _ => callback();
         return this;
     }
     

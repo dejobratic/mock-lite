@@ -16,10 +16,22 @@ internal class ActionSetupSequence<T> : IMethodSetup, ISetupSequence<T>
 
             var step = _steps.Dequeue();
             
-            if (step.Exception != null)
-                throw step.Exception;
+            try
+            {
+                // Execute callback if present
+                if (step.ParameterCallback is not null)
+                    step.ParameterCallback(args);
+                
+                if (step.Exception != null)
+                    throw step.Exception;
 
-            return null;
+                return null;
+            }
+            catch (Exception ex) when (ex != step.Exception)
+            {
+                // If callback throws, let it propagate unless we have a setup exception
+                throw;
+            }
         }
     }
 
@@ -62,26 +74,56 @@ internal class ActionSetupSequence<T> : IMethodSetup, ISetupSequence<T>
 
     public ISetupSequence<T> Callback(Action callback)
     {
-        throw new NotImplementedException();
+        if (_steps.Count > 0)
+        {
+            var lastStep = _steps.ToArray()[_steps.Count - 1];
+            lastStep.ParameterCallback = _ => callback();
+        }
+        
+        return this;
     }
 
     public ISetupSequence<T> Callback<T1>(Action<T1> callback)
     {
-        throw new NotImplementedException();
+        if (_steps.Count > 0)
+        {
+            var lastStep = _steps.ToArray()[_steps.Count - 1];
+            lastStep.ParameterCallback = args => callback((T1)args[0]);
+        }
+        
+        return this;
     }
 
     public ISetupSequence<T> Callback<T1, T2>(Action<T1, T2> callback)
     {
-        throw new NotImplementedException();
+        if (_steps.Count > 0)
+        {
+            var lastStep = _steps.ToArray()[_steps.Count - 1];
+            lastStep.ParameterCallback = args => callback((T1)args[0], (T2)args[1]);
+        }
+        
+        return this;
     }
 
     public ISetupSequence<T> Callback<T1, T2, T3>(Action<T1, T2, T3> callback)
     {
-        throw new NotImplementedException();
+        if (_steps.Count > 0)
+        {
+            var lastStep = _steps.ToArray()[_steps.Count - 1];
+            lastStep.ParameterCallback = args => callback((T1)args[0], (T2)args[1], (T3)args[2]);
+        }
+        
+        return this;
     }
 
     public ISetupSequence<T> Callback<T1, T2, T3, T4>(Action<T1, T2, T3, T4> callback)
     {
-        throw new NotImplementedException();
+        if (_steps.Count > 0)
+        {
+            var lastStep = _steps.ToArray()[_steps.Count - 1];
+            lastStep.ParameterCallback = args => callback((T1)args[0], (T2)args[1], (T3)args[2], (T4)args[3]);
+        }
+        
+        return this;
     }
 }

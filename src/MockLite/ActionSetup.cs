@@ -1,11 +1,9 @@
-using System.Reflection;
-
 namespace MockLite;
 
 internal class ActionSetup<T> : IMethodSetup, ISetup<T>
 {
     private Action? _callback;
-    private Action? _parameterCallback;
+    private Action<object[]>? _parameterCallback;
     private Exception? _exception;
     
     public object? Execute(object[] args)
@@ -14,7 +12,7 @@ internal class ActionSetup<T> : IMethodSetup, ISetup<T>
         {
             // Execute parameter callback with arguments
             if (_parameterCallback is not null)
-                InvokeParameterCallback(args);
+                _parameterCallback(args);
             
             // Execute simple callback
             _callback?.Invoke();
@@ -31,30 +29,6 @@ internal class ActionSetup<T> : IMethodSetup, ISetup<T>
         }
     }
     
-    private void InvokeParameterCallback(object[] args)
-    {
-        try
-        {
-            // Use reflection to invoke the callback with the right number of parameters
-            var method = _parameterCallback.Method;
-            var parameters = method.GetParameters();
-            
-            if (parameters.Length == 0)
-            {
-                _parameterCallback.DynamicInvoke();
-            }
-            else if (parameters.Length <= args.Length)
-            {
-                var callbackArgs = new object[parameters.Length];
-                Array.Copy(args, callbackArgs, parameters.Length);
-                _parameterCallback.DynamicInvoke(callbackArgs);
-            }
-        }
-        catch (TargetParameterCountException)
-        {
-            // Parameter count mismatch, skip callback
-        }
-    }
     
     public void Returns() => _callback = null;
     public void Throws<TException>() where TException : Exception, new() => _exception = new TException();
