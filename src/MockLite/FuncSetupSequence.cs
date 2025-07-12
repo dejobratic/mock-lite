@@ -92,45 +92,12 @@ internal class FuncSetupSequence<T, TResult> : IMethodSetup, ISetupSequence<T, T
         return this;
     }
     
-    public ISetupSequence<T, TResult> Callback<T1>(Action<T1> callback)
+    public ISetupSequence<T, TResult> Callback(Action<object[]> callback)
     {
         if (_steps.Count > 0)
         {
             var lastStep = _steps.ToArray()[_steps.Count - 1];
-            lastStep.ParameterCallback = args => callback((T1)args[0]);
-        }
-        
-        return this;
-    }
-    
-    public ISetupSequence<T, TResult> Callback<T1, T2>(Action<T1, T2> callback)
-    {
-        if (_steps.Count > 0)
-        {
-            var lastStep = _steps.ToArray()[_steps.Count - 1];
-            lastStep.ParameterCallback = args => callback((T1)args[0], (T2)args[1]);
-        }
-        
-        return this;
-    }
-    
-    public ISetupSequence<T, TResult> Callback<T1, T2, T3>(Action<T1, T2, T3> callback)
-    {
-        if (_steps.Count > 0)
-        {
-            var lastStep = _steps.ToArray()[_steps.Count - 1];
-            lastStep.ParameterCallback = args => callback((T1)args[0], (T2)args[1], (T3)args[2]);
-        }
-        
-        return this;
-    }
-    
-    public ISetupSequence<T, TResult> Callback<T1, T2, T3, T4>(Action<T1, T2, T3, T4> callback)
-    {
-        if (_steps.Count > 0)
-        {
-            var lastStep = _steps.ToArray()[_steps.Count - 1];
-            lastStep.ParameterCallback = args => callback((T1)args[0], (T2)args[1], (T3)args[2], (T4)args[3]);
+            lastStep.ParameterCallback = callback;
         }
         
         return this;

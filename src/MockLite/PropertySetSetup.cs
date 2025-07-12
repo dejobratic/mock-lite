@@ -1,6 +1,6 @@
 namespace MockLite;
 
-internal class ActionSetup<T> : IMethodSetup, ISetup<T>
+internal class PropertySetSetup<T> : IMethodSetup, ISetupSetter<T>
 {
     private Action? _callback;
     private Action<object[]>? _parameterCallback;
@@ -29,9 +29,6 @@ internal class ActionSetup<T> : IMethodSetup, ISetup<T>
         }
     }
     
-    public void Returns()
-        => _callback = null;
-    
     public void Throws<TException>()
         where TException : Exception, new()
         => _exception = new TException();
@@ -39,25 +36,13 @@ internal class ActionSetup<T> : IMethodSetup, ISetup<T>
     public void Throws(Exception exception)
         => _exception = exception;
     
-    public void ReturnsAsync()
-    {
-        // For action setups, ReturnsAsync just ensures no exception is thrown
-    }
-    
-    public void ThrowsAsync<TException>()
-        where TException : Exception, new()
-        => _exception = new TException();
-    
-    public void ThrowsAsync(Exception exception)
-        => _exception = exception;
-    
-    public ISetup<T> Callback(Action callback)
+    public ISetupSetter<T> Callback(Action callback)
     {
         _callback = callback;
         return this;
     }
     
-    public ISetup<T> Callback(Action<object[]> callback)
+    public ISetupSetter<T> Callback(Action<object[]> callback)
     {
         _parameterCallback = callback;
         return this;

@@ -28,6 +28,11 @@ public class Mock<T> where T : class
         return _interceptor.SetupGet(expression);
     }
 
+    public ISetupSetter<T> SetupSet(Expression<Action<T>> expression)
+    {
+        return _interceptor.SetupSet(expression);
+    }
+
     public ISetupSequence<T, TResult> SetupSequence<TResult>(Expression<Func<T, TResult>> expression)
     {
         return _interceptor.SetupSequence(expression);

@@ -49,6 +49,14 @@ public class MockInterceptor
         return setup;
     }
 
+    public ISetupSetter<T> SetupSet<T>(Expression<Action<T>> expression)
+    {
+        var methodCall = ParseExpression(expression);
+        var setup = new PropertySetSetup<T>();
+        _setups[methodCall] = setup;
+        return setup;
+    }
+
     public void Verify<T>(Expression<Action<T>> expression, Times times)
     {
         var methodCall = ParseExpression(expression);
@@ -87,34 +95,8 @@ public class MockInterceptor
         return sequence;
     }
 
-    private MethodCall ParseExpression(LambdaExpression expression)
-    {
-        // Parse the expression tree to extract method info and arguments
-        // This is a simplified version - full implementation would handle more cases
-        return expression.Body switch
-        {
-            MethodCallExpression methodCall
-                => new MethodCall(methodCall.Method, ExtractArgumentMatchers(methodCall.Arguments)),
-
-            MemberExpression { Member: PropertyInfo prop }
-                => new MethodCall(prop.GetGetMethod()!, []),
-
-            _ => throw new ArgumentException("Unsupported expression type")
-        };
-    }
-
-    private object[] ExtractArgumentMatchers(ReadOnlyCollection<Expression> arguments)
-    {
-        // For now, just extract constant values
-        // Full implementation would handle It.IsAny<T>(), etc.
-        return [.. arguments.Select(arg =>
-        {
-            if (arg is ConstantExpression constExpr)
-                return constExpr.Value;
-            
-            return ArgMatcher.Any; // Placeholder for argument matchers
-        })!];
-    }
+    private static MethodCall ParseExpression(LambdaExpression expression)
+        => MethodCallFactory.Create(expression);
 
     private static object? GetDefaultValue(Type type)
     {
@@ -123,6 +105,20 @@ public class MockInterceptor
 
         if (type.IsValueType)
             return Activator.CreateInstance(type);
+
+        // Handle Task and Task<T> specifically
+        if (type == typeof(Task))
+            return Task.CompletedTask;
+            
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
+        {
+            var resultType = type.GetGenericArguments()[0];
+            var defaultResult = resultType.IsValueType ? Activator.CreateInstance(resultType) : null;
+            
+            // Use reflection to call Task.FromResult<T>(T) with the correct type
+            var taskFromResultMethod = typeof(Task).GetMethod("FromResult")!.MakeGenericMethod(resultType);
+            return taskFromResultMethod.Invoke(null, [defaultResult]);
+        }
 
         return null;
     }

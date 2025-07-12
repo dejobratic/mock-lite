@@ -45,3 +45,4 @@ public interface ISetup<T, in TResult>
     
     ISetup<T, TResult> Callback(Action<object[]> callback);
 }
+
