@@ -3,7 +3,7 @@ using System.Reflection.Emit;
 
 namespace MockLite;
 
-internal static class ProxyGenerator
+public static class ProxyGenerator
 {
     private static readonly Dictionary<Type, Type> ProxyTypes = new();
     
@@ -49,19 +49,10 @@ internal static class ProxyGenerator
         // Define constructor
         DefineConstructor(typeBuilder, interceptorField);
         
-        // Implement all interface methods
+        // Implement all interface methods (this includes property getters/setters)
         foreach (var method in interfaceType.GetMethods())
         {
             ImplementMethod(typeBuilder, method, interceptorField);
-        }
-        
-        // Handle properties (they're just special methods)
-        foreach (var property in interfaceType.GetProperties())
-        {
-            if (property.GetGetMethod() != null)
-                ImplementMethod(typeBuilder, property.GetGetMethod()!, interceptorField);
-            if (property.GetSetMethod() != null)
-                ImplementMethod(typeBuilder, property.GetSetMethod()!, interceptorField);
         }
         
         return typeBuilder.CreateType();

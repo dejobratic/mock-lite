@@ -29,13 +29,25 @@ internal class ActionSetup<T> : IMethodSetup, ISetup<T>
         }
     }
     
+    public void Returns()
+        => _callback = null;
     
-    public void Returns() => _callback = null;
-    public void Throws<TException>() where TException : Exception, new() => _exception = new TException();
-    public void Throws(Exception exception) => _exception = exception;
-    public Task ReturnsAsync() => Task.CompletedTask;
-    public Task ThrowsAsync<TException>() where TException : Exception, new() => Task.FromException(new TException());
-    public Task ThrowsAsync(Exception exception) => Task.FromException(exception);
+    public void Throws<TException>()
+        where TException : Exception, new()
+        => _exception = new TException();
+    
+    public void Throws(Exception exception)
+        => _exception = exception;
+    
+    public Task ReturnsAsync()
+        => Task.CompletedTask;
+    
+    public Task ThrowsAsync<TException>()
+        where TException : Exception, new()
+        => Task.FromException(new TException());
+    
+    public Task ThrowsAsync(Exception exception)
+        => Task.FromException(exception);
     
     public ISetup<T> Callback(Action callback)
     {

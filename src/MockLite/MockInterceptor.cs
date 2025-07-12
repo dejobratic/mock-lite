@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace MockLite;
 
-internal class MockInterceptor
+public class MockInterceptor
 {
     private readonly Dictionary<MethodCall, IMethodSetup> _setups = new();
     private readonly List<MethodCall> _calls = [];
