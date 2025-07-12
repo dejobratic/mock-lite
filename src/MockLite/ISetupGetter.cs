@@ -6,7 +6,8 @@ public interface ISetupGetter<T, in TProperty>
     
     void Returns(Func<TProperty> valueFunction);
     
-    void Throws<TException>() where TException : Exception, new();
+    void Throws<TException>()
+        where TException : Exception, new();
     
     void Throws(Exception exception);
     

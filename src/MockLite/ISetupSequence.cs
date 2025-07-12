@@ -16,13 +16,7 @@ public interface ISetupSequence<T>
     
     ISetupSequence<T> Callback(Action callback);
     
-    ISetupSequence<T> Callback<T1>(Action<T1> callback);
-    
-    ISetupSequence<T> Callback<T1, T2>(Action<T1, T2> callback);
-    
-    ISetupSequence<T> Callback<T1, T2, T3>(Action<T1, T2, T3> callback);
-    
-    ISetupSequence<T> Callback<T1, T2, T3, T4>(Action<T1, T2, T3, T4> callback);
+    ISetupSequence<T> Callback(Action<object[]> callback);
 }
 
 public interface ISetupSequence<T, in TResult>
@@ -45,11 +39,5 @@ public interface ISetupSequence<T, in TResult>
     
     ISetupSequence<T, TResult> Callback(Action callback);
     
-    ISetupSequence<T, TResult> Callback<T1>(Action<T1> callback);
-    
-    ISetupSequence<T, TResult> Callback<T1, T2>(Action<T1, T2> callback);
-    
-    ISetupSequence<T, TResult> Callback<T1, T2, T3>(Action<T1, T2, T3> callback);
-    
-    ISetupSequence<T, TResult> Callback<T1, T2, T3, T4>(Action<T1, T2, T3, T4> callback);
+    ISetupSequence<T, TResult> Callback(Action<object[]> callback);
 }
