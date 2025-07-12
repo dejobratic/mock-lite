@@ -28,7 +28,7 @@ public class Mock<T> where T : class
         return _interceptor.SetupGet(expression);
     }
 
-    public ISetupSetter<T> SetupSet(Expression<Action<T>> expression)
+    public ISetupSetter<T> SetupSet<TProperty>(Expression<Func<T, TProperty>> expression)
     {
         return _interceptor.SetupSet(expression);
     }

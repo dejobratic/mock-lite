@@ -19,11 +19,15 @@ public class Times
     
     public static readonly Times AtMostOnce = new Times(0, 1);
     
-    public static Times Exactly(int count) => new Times(count, count);
+    public static Times Exactly(int count)
+        => new Times(count, count);
     
-    public static Times AtLeast(int count) => new Times(count, int.MaxValue);
+    public static Times AtLeast(int count)
+        => new Times(count, int.MaxValue);
     
-    public static Times AtMost(int count) => new Times(0, count);
+    public static Times AtMost(int count)
+        => new Times(0, count);
     
-    public static Times Between(int min, int max) => new Times(min, max);
+    public static Times Between(int min, int max)
+        => new Times(min, max);
 }

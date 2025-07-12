@@ -3,8 +3,8 @@ namespace MockLite;
 internal class ActionSetupSequence<T> : IMethodSetup, ISetupSequence<T>
 {
     private readonly Queue<SequenceStep<object>> _steps = new();
-
     private readonly object _lock = new();
+    private Action<object[]>? _pendingCallback;
 
     public object? Execute(object[] args)
     {
@@ -37,60 +37,86 @@ internal class ActionSetupSequence<T> : IMethodSetup, ISetupSequence<T>
 
     public ISetupSequence<T> Returns()
     {
-        _steps.Enqueue(new SequenceStep<object> { Value = default(T)! });
+        var step = new SequenceStep<object> { Value = default(T)! };
+        if (_pendingCallback != null)
+        {
+            step.ParameterCallback = _pendingCallback;
+            _pendingCallback = null;
+        }
+        _steps.Enqueue(step);
         return this;
     }
 
     public ISetupSequence<T> Throws<TException>()
         where TException : Exception, new()
     {
-        _steps.Enqueue(new SequenceStep<object> { Exception = new TException() });
+        var step = new SequenceStep<object> { Exception = new TException() };
+        if (_pendingCallback != null)
+        {
+            step.ParameterCallback = _pendingCallback;
+            _pendingCallback = null;
+        }
+        _steps.Enqueue(step);
         return this;
     }
 
     public ISetupSequence<T> Throws(Exception exception)
     {
-        _steps.Enqueue(new SequenceStep<object> { Exception = exception });
+        var step = new SequenceStep<object> { Exception = exception };
+        if (_pendingCallback != null)
+        {
+            step.ParameterCallback = _pendingCallback;
+            _pendingCallback = null;
+        }
+        _steps.Enqueue(step);
         return this;
     }
 
     public ISetupSequence<T> ReturnsAsync()
     {
-        _steps.Enqueue(new SequenceStep<object> { Value = null! });
+        var step = new SequenceStep<object> { Value = null! };
+        if (_pendingCallback != null)
+        {
+            step.ParameterCallback = _pendingCallback;
+            _pendingCallback = null;
+        }
+        _steps.Enqueue(step);
         return this;
     }
 
     public ISetupSequence<T> ThrowsAsync<TException>() where TException : Exception, new()
     {
-        _steps.Enqueue(new SequenceStep<object> { Exception = new TException() });
+        var step = new SequenceStep<object> { Exception = new TException() };
+        if (_pendingCallback != null)
+        {
+            step.ParameterCallback = _pendingCallback;
+            _pendingCallback = null;
+        }
+        _steps.Enqueue(step);
         return this;
     }
 
     public ISetupSequence<T> ThrowsAsync(Exception exception)
     {
-        _steps.Enqueue(new SequenceStep<object> { Exception = exception });
+        var step = new SequenceStep<object> { Exception = exception };
+        if (_pendingCallback != null)
+        {
+            step.ParameterCallback = _pendingCallback;
+            _pendingCallback = null;
+        }
+        _steps.Enqueue(step);
         return this;
     }
 
     public ISetupSequence<T> Callback(Action callback)
     {
-        if (_steps.Count > 0)
-        {
-            var lastStep = _steps.ToArray()[_steps.Count - 1];
-            lastStep.ParameterCallback = _ => callback();
-        }
-        
+        _pendingCallback = _ => callback();
         return this;
     }
 
     public ISetupSequence<T> Callback(Action<object[]> callback)
     {
-        if (_steps.Count > 0)
-        {
-            var lastStep = _steps.ToArray()[_steps.Count - 1];
-            lastStep.ParameterCallback = callback;
-        }
-        
+        _pendingCallback = callback;
         return this;
     }
 }

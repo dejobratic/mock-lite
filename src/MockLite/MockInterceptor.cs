@@ -49,12 +49,26 @@ public class MockInterceptor
         return setup;
     }
 
-    public ISetupSetter<T> SetupSet<T>(Expression<Action<T>> expression)
+    public ISetupSetter<T> SetupSet<T, TProperty>(Expression<Func<T, TProperty>> expression)
     {
-        var methodCall = ParseExpression(expression);
+        var methodCall = ParseExpressionForSetter(expression);
         var setup = new PropertySetSetup<T>();
         _setups[methodCall] = setup;
         return setup;
+    }
+    
+    private static MethodCall ParseExpressionForSetter(LambdaExpression expression)
+    {
+        if (expression.Body is MemberExpression { Member: PropertyInfo prop })
+        {
+            var setMethod = prop.GetSetMethod();
+            if (setMethod == null)
+                throw new ArgumentException($"Property '{prop.Name}' does not have a setter");
+            // Property setters accept one parameter (the value), use wildcard matching
+            return new MethodCall(setMethod, [ArgMatcher.Any]);
+        }
+        
+        throw new ArgumentException("SetupSet requires a property expression");
     }
 
     public void Verify<T>(Expression<Action<T>> expression, Times times)

@@ -5,6 +5,7 @@ namespace MockLite;
 internal class FuncSetup<T, TResult> : IMethodSetup, ISetup<T, TResult>
 {
     private Func<TResult>? _callback;
+    private Action? _simpleCallback;
     private Action<object[]>? _parameterCallback;
     private Exception? _exception;
     
@@ -12,6 +13,9 @@ internal class FuncSetup<T, TResult> : IMethodSetup, ISetup<T, TResult>
     {
         try
         {
+            // Execute simple callback
+            _simpleCallback?.Invoke();
+            
             // Execute parameter callback with arguments
             _parameterCallback?.Invoke(args);
 
@@ -58,7 +62,7 @@ internal class FuncSetup<T, TResult> : IMethodSetup, ISetup<T, TResult>
     
     public ISetup<T, TResult> Callback(Action callback)
     {
-        _parameterCallback = _ => callback();
+        _simpleCallback = callback;
         return this;
     }
     
