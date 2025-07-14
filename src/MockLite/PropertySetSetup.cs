@@ -47,4 +47,28 @@ internal class PropertySetSetup<T> : IMethodSetup, ISetupSetter<T>
         _parameterCallback = callback;
         return this;
     }
+    
+    public ISetupSetter<T> Callback<T1>(Action<T1> callback)
+    {
+        _parameterCallback = args => callback((T1)args[0]);
+        return this;
+    }
+    
+    public ISetupSetter<T> Callback<T1, T2>(Action<T1, T2> callback)
+    {
+        _parameterCallback = args => callback((T1)args[0], (T2)args[1]);
+        return this;
+    }
+    
+    public ISetupSetter<T> Callback<T1, T2, T3>(Action<T1, T2, T3> callback)
+    {
+        _parameterCallback = args => callback((T1)args[0], (T2)args[1], (T3)args[2]);
+        return this;
+    }
+    
+    public ISetupSetter<T> Callback<T1, T2, T3, T4>(Action<T1, T2, T3, T4> callback)
+    {
+        _parameterCallback = args => callback((T1)args[0], (T2)args[1], (T3)args[2], (T4)args[3]);
+        return this;
+    }
 }
