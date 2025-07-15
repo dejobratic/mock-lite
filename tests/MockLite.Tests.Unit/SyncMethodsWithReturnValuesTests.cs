@@ -1,8 +1,9 @@
+// ReSharper disable MemberCanBePrivate.Global
 namespace MockLite.Tests.Unit;
 
 public class SyncMethodsWithReturnValuesTests
 {
-    private interface ISyncMethodsWithReturnValues
+    public interface ISyncMethodsWithReturnValues
     {
         bool ValidateOrder(int orderId);
     
