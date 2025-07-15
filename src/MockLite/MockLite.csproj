@@ -4,6 +4,26 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        
+        <!-- Package Information -->
+        <PackageId>MockLite</PackageId>
+        <Title>MockLite</Title>
+        <Description>A lightweight mocking framework for .NET with fluent interface support</Description>
+        <Authors>Dejan Bratic</Authors>
+        <Copyright>Copyright © Dejan Bratic 2025</Copyright>
+        <PackageProjectUrl>https://github.com/dejobratic/mock-lite</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/dejobratic/mock-lite</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>mock;mocking;testing;unit-testing;tdd</PackageTags>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
 
 </Project>
