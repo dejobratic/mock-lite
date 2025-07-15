@@ -1,9 +1,18 @@
-using MockLite.Tests.Unit.Samples;
-
 namespace MockLite.Tests.Unit;
 
 public class SyncMethodsWithReturnValuesTests
 {
+    private interface ISyncMethodsWithReturnValues
+    {
+        bool ValidateOrder(int orderId);
+    
+        decimal CalculateShipping(decimal weight, string destination);
+    
+        decimal CalculateTax(int orderId, string customerState, decimal subtotal);
+    
+        string GenerateOrderConfirmation(int orderId, string customerEmail, decimal total, string paymentMethod);
+    }
+    
     private readonly Mock<ISyncMethodsWithReturnValues> _sut = new();
 
     [Fact]
