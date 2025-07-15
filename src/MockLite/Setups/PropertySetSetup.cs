@@ -1,22 +1,27 @@
-namespace MockLite;
+using System.Linq.Expressions;
 
-internal class PropertyGetSetup<T, TProperty> : IMethodSetup, ISetupGetter<T, TProperty>
+namespace MockLite.Setups;
+
+internal class PropertySetSetup<T> : IMethodSetup, ISetupSetter<T>
 {
-    private Func<TProperty>? _callback;
-    private Action? _parameterCallback;
+    private Action? _callback;
+    private Delegate? _parameterCallback;
     private Exception? _exception;
-    
+
     public object? Execute(object[] args)
     {
         try
         {
-            // Execute parameter callback
-            _parameterCallback?.Invoke();
+            // Execute simple callback
+            _callback?.Invoke();
             
+            // Execute parameter callback with arguments
+            _parameterCallback?.DynamicInvoke(args);
+
             if (_exception != null)
                 throw _exception;
-            
-            return _callback is not null ? _callback() : default;
+
+            return null;
         }
         catch (Exception ex) when (ex != _exception)
         {
@@ -24,21 +29,21 @@ internal class PropertyGetSetup<T, TProperty> : IMethodSetup, ISetupGetter<T, TP
             throw;
         }
     }
-    
-    public void Returns(TProperty value)
-        => _callback = () => value;
-    
-    public void Returns(Func<TProperty> valueFunction)
-        => _callback = valueFunction;
-    
+
     public void Throws<TException>()
         where TException : Exception, new()
         => _exception = new TException();
-    
+
     public void Throws(Exception exception)
         => _exception = exception;
-    
-    public ISetupGetter<T, TProperty> Callback(Action callback)
+
+    public ISetupSetter<T> Callback(Action callback)
+    {
+        _callback = callback;
+        return this;
+    }
+
+    public ISetupSetter<T> Callback(Delegate callback)
     {
         _parameterCallback = callback;
         return this;

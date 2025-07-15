@@ -1,7 +1,9 @@
 using System.Linq.Expressions;
 using System.Reflection;
+using MockLite.Exceptions;
+using MockLite.Setups;
 
-namespace MockLite;
+namespace MockLite.Core;
 
 public class MockInterceptor
 {
@@ -58,16 +60,15 @@ public class MockInterceptor
     
     private static MethodCall ParseExpressionForSetter(LambdaExpression expression)
     {
-        if (expression.Body is MemberExpression { Member: PropertyInfo prop })
-        {
-            var setMethod = prop.GetSetMethod();
-            if (setMethod == null)
-                throw new ArgumentException($"Property '{prop.Name}' does not have a setter");
-            // Property setters accept one parameter (the value), use wildcard matching
-            return new MethodCall(setMethod, [ArgMatcher.Any]);
-        }
+        if (expression.Body is not MemberExpression { Member: PropertyInfo prop })
+            throw new ArgumentException("SetupSet requires a property expression");
         
-        throw new ArgumentException("SetupSet requires a property expression");
+        var setMethod = prop.GetSetMethod()
+            ?? throw new ArgumentException($"Property '{prop.Name}' does not have a setter");
+        
+        // Property setters accept one parameter (the value), use wildcard matching
+        return new MethodCall(setMethod, [ArgMatcher.Any]);
+
     }
 
     public void Verify<T>(Expression<Action<T>> expression, Times times)
@@ -96,6 +97,7 @@ public class MockInterceptor
     {
         var methodCall = ParseExpression(expression);
         var sequence = new FuncSetupSequence<T, TResult>();
+        
         _setups[methodCall] = sequence;
         return sequence;
     }
@@ -104,6 +106,7 @@ public class MockInterceptor
     {
         var methodCall = ParseExpression(expression);
         var sequence = new ActionSetupSequence<T>();
+        
         _setups[methodCall] = sequence;
         return sequence;
     }

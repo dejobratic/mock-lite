@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace MockLite;
+namespace MockLite.Core;
 
 internal static class MethodCallFactory
 {

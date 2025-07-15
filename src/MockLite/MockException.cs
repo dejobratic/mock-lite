@@ -1,4 +1,4 @@
-namespace MockLite;
+namespace MockLite.Exceptions;
 
 public class MockException : Exception
 {

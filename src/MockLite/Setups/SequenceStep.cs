@@ -1,4 +1,4 @@
-namespace MockLite;
+namespace MockLite.Setups;
 
 internal class SequenceStep<T>
 {

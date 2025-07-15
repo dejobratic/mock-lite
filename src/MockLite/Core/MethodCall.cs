@@ -1,12 +1,12 @@
 using System.Reflection;
 
-namespace MockLite;
+namespace MockLite.Core;
 
 internal class MethodCall(MethodInfo method, object[] arguments)
 {
-    public MethodInfo Method { get; } = method;
+    private MethodInfo Method { get; } = method;
 
-    public object[] Arguments { get; } = arguments;
+    private object[] Arguments { get; } = arguments;
 
     public bool Matches(MethodCall other)
     {

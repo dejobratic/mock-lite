@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace MockLite;
+namespace MockLite.Core;
 
 public static class ProxyGenerator
 {

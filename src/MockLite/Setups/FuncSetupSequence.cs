@@ -1,6 +1,6 @@
-namespace MockLite;
+namespace MockLite.Setups;
 
-internal class FuncSetupSequence<T, TResult> : IMethodSetup, ISetupSequence<T, TResult>
+internal class FuncSetupSequence<T, TResult>: IMethodSetup, ISetupSequence<T, TResult>
 {
     private readonly Queue<SequenceStep<TResult?>> _steps = new();
     private readonly object _lock = new();
@@ -136,33 +136,9 @@ internal class FuncSetupSequence<T, TResult> : IMethodSetup, ISetupSequence<T, T
         return this;
     }
     
-    public ISetupSequence<T, TResult> Callback(Action<object[]> callback)
+    public ISetupSequence<T, TResult> Callback(Delegate callback)
     {
-        _pendingCallback = callback;
-        return this;
-    }
-    
-    public ISetupSequence<T, TResult> Callback<T1>(Action<T1> callback)
-    {
-        _pendingCallback = args => callback((T1)args[0]);
-        return this;
-    }
-    
-    public ISetupSequence<T, TResult> Callback<T1, T2>(Action<T1, T2> callback)
-    {
-        _pendingCallback = args => callback((T1)args[0], (T2)args[1]);
-        return this;
-    }
-    
-    public ISetupSequence<T, TResult> Callback<T1, T2, T3>(Action<T1, T2, T3> callback)
-    {
-        _pendingCallback = args => callback((T1)args[0], (T2)args[1], (T3)args[2]);
-        return this;
-    }
-    
-    public ISetupSequence<T, TResult> Callback<T1, T2, T3, T4>(Action<T1, T2, T3, T4> callback)
-    {
-        _pendingCallback = args => callback((T1)args[0], (T2)args[1], (T3)args[2], (T4)args[3]);
+        _pendingCallback = args => callback.DynamicInvoke(args);
         return this;
     }
 }

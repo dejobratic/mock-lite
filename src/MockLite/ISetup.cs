@@ -1,11 +1,9 @@
+using System.Linq.Expressions;
+
 namespace MockLite;
 
 public interface ISetup<T>
 {
-    void Returns();
-    
-    void ReturnsAsync();
-    
     void Throws<TException>()
         where TException : Exception, new();
     
@@ -18,15 +16,7 @@ public interface ISetup<T>
     
     ISetup<T> Callback(Action callback);
     
-    ISetup<T> Callback(Action<object[]> callback);
-    
-    ISetup<T> Callback<T1>(Action<T1> callback);
-    
-    ISetup<T> Callback<T1, T2>(Action<T1, T2> callback);
-    
-    ISetup<T> Callback<T1, T2, T3>(Action<T1, T2, T3> callback);
-    
-    ISetup<T> Callback<T1, T2, T3, T4>(Action<T1, T2, T3, T4> callback);
+    ISetup<T> Callback(Delegate callback);
 }
 
 public interface ISetup<T, in TResult>
@@ -51,14 +41,6 @@ public interface ISetup<T, in TResult>
     
     ISetup<T, TResult> Callback(Action callback);
     
-    ISetup<T, TResult> Callback(Action<object[]> callback);
-    
-    ISetup<T, TResult> Callback<T1>(Action<T1> callback);
-    
-    ISetup<T, TResult> Callback<T1, T2>(Action<T1, T2> callback);
-    
-    ISetup<T, TResult> Callback<T1, T2, T3>(Action<T1, T2, T3> callback);
-    
-    ISetup<T, TResult> Callback<T1, T2, T3, T4>(Action<T1, T2, T3, T4> callback);
+    ISetup<T, TResult> Callback(Delegate callback);
 }
 

@@ -1,3 +1,5 @@
+using System.Linq.Expressions;
+
 namespace MockLite;
 
 public interface ISetupGetter<T, in TProperty>

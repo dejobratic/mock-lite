@@ -1,4 +1,4 @@
-namespace MockLite;
+namespace MockLite.Core;
 
 internal static class ArgMatcher
 {

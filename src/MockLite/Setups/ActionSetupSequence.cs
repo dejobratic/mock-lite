@@ -1,4 +1,6 @@
-namespace MockLite;
+using System.Reflection;
+
+namespace MockLite.Setups;
 
 internal class ActionSetupSequence<T> : IMethodSetup, ISetupSequence<T>
 {
@@ -10,22 +12,26 @@ internal class ActionSetupSequence<T> : IMethodSetup, ISetupSequence<T>
     {
         lock (_lock)
         {
-                // No more steps, do nothing
+            // No more steps, do nothing
             if (_steps.Count == 0)
                 return null;
 
             var step = _steps.Dequeue();
-            
+
             try
             {
                 // Execute callback if present
-                if (step.ParameterCallback is not null)
-                    step.ParameterCallback(args);
-                
+                step.ParameterCallback?.Invoke(args);
+
                 if (step.Exception != null)
                     throw step.Exception;
 
                 return null;
+            }
+            catch (TargetInvocationException tie) when (tie.InnerException != null)
+            {
+                // Unwrap TargetInvocationException from DynamicInvoke
+                throw tie.InnerException;
             }
             catch (Exception ex) when (ex != step.Exception)
             {
@@ -43,6 +49,7 @@ internal class ActionSetupSequence<T> : IMethodSetup, ISetupSequence<T>
             step.ParameterCallback = _pendingCallback;
             _pendingCallback = null;
         }
+
         _steps.Enqueue(step);
         return this;
     }
@@ -56,6 +63,7 @@ internal class ActionSetupSequence<T> : IMethodSetup, ISetupSequence<T>
             step.ParameterCallback = _pendingCallback;
             _pendingCallback = null;
         }
+
         _steps.Enqueue(step);
         return this;
     }
@@ -68,6 +76,7 @@ internal class ActionSetupSequence<T> : IMethodSetup, ISetupSequence<T>
             step.ParameterCallback = _pendingCallback;
             _pendingCallback = null;
         }
+
         _steps.Enqueue(step);
         return this;
     }
@@ -80,6 +89,7 @@ internal class ActionSetupSequence<T> : IMethodSetup, ISetupSequence<T>
             step.ParameterCallback = _pendingCallback;
             _pendingCallback = null;
         }
+
         _steps.Enqueue(step);
         return this;
     }
@@ -92,6 +102,7 @@ internal class ActionSetupSequence<T> : IMethodSetup, ISetupSequence<T>
             step.ParameterCallback = _pendingCallback;
             _pendingCallback = null;
         }
+
         _steps.Enqueue(step);
         return this;
     }
@@ -104,6 +115,7 @@ internal class ActionSetupSequence<T> : IMethodSetup, ISetupSequence<T>
             step.ParameterCallback = _pendingCallback;
             _pendingCallback = null;
         }
+
         _steps.Enqueue(step);
         return this;
     }
@@ -114,33 +126,9 @@ internal class ActionSetupSequence<T> : IMethodSetup, ISetupSequence<T>
         return this;
     }
 
-    public ISetupSequence<T> Callback(Action<object[]> callback)
+    public ISetupSequence<T> Callback(Delegate callback)
     {
-        _pendingCallback = callback;
-        return this;
-    }
-    
-    public ISetupSequence<T> Callback<T1>(Action<T1> callback)
-    {
-        _pendingCallback = args => callback((T1)args[0]);
-        return this;
-    }
-    
-    public ISetupSequence<T> Callback<T1, T2>(Action<T1, T2> callback)
-    {
-        _pendingCallback = args => callback((T1)args[0], (T2)args[1]);
-        return this;
-    }
-    
-    public ISetupSequence<T> Callback<T1, T2, T3>(Action<T1, T2, T3> callback)
-    {
-        _pendingCallback = args => callback((T1)args[0], (T2)args[1], (T3)args[2]);
-        return this;
-    }
-    
-    public ISetupSequence<T> Callback<T1, T2, T3, T4>(Action<T1, T2, T3, T4> callback)
-    {
-        _pendingCallback = args => callback((T1)args[0], (T2)args[1], (T3)args[2], (T4)args[3]);
+        _pendingCallback = args => callback.DynamicInvoke(args);
         return this;
     }
 }

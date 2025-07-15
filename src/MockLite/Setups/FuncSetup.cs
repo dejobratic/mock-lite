@@ -1,28 +1,31 @@
+using System;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
-namespace MockLite;
+namespace MockLite.Setups;
 
 internal class FuncSetup<T, TResult> : IMethodSetup, ISetup<T, TResult>
 {
     private Func<TResult>? _callback;
     private Action? _simpleCallback;
-    private Action<object[]>? _parameterCallback;
+    private Delegate? _parameterCallback;
     private Exception? _exception;
-    
+
     public object? Execute(object[] args)
     {
         try
         {
             // Execute simple callback
             _simpleCallback?.Invoke();
-            
+
             // Execute parameter callback with arguments
-            _parameterCallback?.Invoke(args);
+            _parameterCallback?.DynamicInvoke(args);
 
             if (_exception is not null)
                 throw _exception;
-            
-            return _callback is not null 
+
+            return _callback is not null
                 ? _callback()
                 : default;
         }
@@ -32,67 +35,42 @@ internal class FuncSetup<T, TResult> : IMethodSetup, ISetup<T, TResult>
             throw;
         }
     }
-    
-    
+
     public void Returns(TResult value)
         => _callback = () => value;
-    
+
     public void Returns(Func<TResult> valueFunction)
         => _callback = valueFunction;
-    
+
     public void ReturnsAsync(TResult value)
         => _callback = () => value;
-    
+
     public void ReturnsAsync(Func<TResult> valueFunction)
         => _callback = valueFunction;
 
     public void Throws<TException>()
         where TException : Exception, new()
         => _exception = new TException();
-    
+
     public void Throws(Exception exception)
         => _exception = exception;
-    
+
     public void ThrowsAsync<TException>()
         where TException : Exception, new()
         => _exception = new TException();
-    
+
     public void ThrowsAsync(Exception exception)
         => _exception = exception;
-    
+
     public ISetup<T, TResult> Callback(Action callback)
     {
         _simpleCallback = callback;
         return this;
     }
-    
-    public ISetup<T, TResult> Callback(Action<object[]> callback)
+
+    public ISetup<T, TResult> Callback(Delegate callback)
     {
         _parameterCallback = callback;
-        return this;
-    }
-    
-    public ISetup<T, TResult> Callback<T1>(Action<T1> callback)
-    {
-        _parameterCallback = args => callback((T1)args[0]);
-        return this;
-    }
-    
-    public ISetup<T, TResult> Callback<T1, T2>(Action<T1, T2> callback)
-    {
-        _parameterCallback = args => callback((T1)args[0], (T2)args[1]);
-        return this;
-    }
-    
-    public ISetup<T, TResult> Callback<T1, T2, T3>(Action<T1, T2, T3> callback)
-    {
-        _parameterCallback = args => callback((T1)args[0], (T2)args[1], (T3)args[2]);
-        return this;
-    }
-    
-    public ISetup<T, TResult> Callback<T1, T2, T3, T4>(Action<T1, T2, T3, T4> callback)
-    {
-        _parameterCallback = args => callback((T1)args[0], (T2)args[1], (T3)args[2], (T4)args[3]);
         return this;
     }
 }
