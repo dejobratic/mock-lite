@@ -82,54 +82,6 @@ internal class FuncSetupSequence<T, TResult>: IMethodSetup, ISetupSequence<T, TR
         return this;
     }
     
-    public ISetupSequence<T, TResult> ReturnsAsync(TResult value)
-    {
-        var step = new SequenceStep<TResult?> { Value = value };
-        if (_pendingCallback != null)
-        {
-            step.ParameterCallback = _pendingCallback;
-            _pendingCallback = null;
-        }
-        _steps.Enqueue(step);
-        return this;
-    }
-    
-    public ISetupSequence<T, TResult> ReturnsAsync(Func<TResult> valueFunction)
-    {
-        var step = new SequenceStep<TResult?> { Value = valueFunction() };
-        if (_pendingCallback != null)
-        {
-            step.ParameterCallback = _pendingCallback;
-            _pendingCallback = null;
-        }
-        _steps.Enqueue(step);
-        return this;
-    }
-    
-    public ISetupSequence<T, TResult> ThrowsAsync<TException>() where TException : Exception, new()
-    {
-        var step = new SequenceStep<TResult?> { Exception = new TException() };
-        if (_pendingCallback != null)
-        {
-            step.ParameterCallback = _pendingCallback;
-            _pendingCallback = null;
-        }
-        _steps.Enqueue(step);
-        return this;
-    }
-    
-    public ISetupSequence<T, TResult> ThrowsAsync(Exception exception)
-    {
-        var step = new SequenceStep<TResult?> { Exception = exception };
-        if (_pendingCallback != null)
-        {
-            step.ParameterCallback = _pendingCallback;
-            _pendingCallback = null;
-        }
-        _steps.Enqueue(step);
-        return this;
-    }
-    
     public ISetupSequence<T, TResult> Callback(Action callback)
     {
         _pendingCallback = _ => callback();

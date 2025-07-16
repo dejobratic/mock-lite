@@ -23,15 +23,21 @@ internal class ActionSetupSequence<T> : IMethodSetup, ISetupSequence<T>
                 // Execute callback if present
                 step.ParameterCallback?.Invoke(args);
 
+                switch (step.Value)
+                {
+                    // Execute step callback if present
+                    case Action action:
+                        action.Invoke();
+                        break;
+                    case Delegate del:
+                        del.DynamicInvoke();
+                        break;
+                }
+
                 if (step.Exception != null)
                     throw step.Exception;
 
                 return null;
-            }
-            catch (TargetInvocationException tie) when (tie.InnerException != null)
-            {
-                // Unwrap TargetInvocationException from DynamicInvoke
-                throw tie.InnerException;
             }
             catch (Exception ex) when (ex != step.Exception)
             {
@@ -53,7 +59,7 @@ internal class ActionSetupSequence<T> : IMethodSetup, ISetupSequence<T>
         _steps.Enqueue(step);
         return this;
     }
-
+    
     public ISetupSequence<T> Throws<TException>()
         where TException : Exception, new()
     {
@@ -81,54 +87,29 @@ internal class ActionSetupSequence<T> : IMethodSetup, ISetupSequence<T>
         return this;
     }
 
-    public ISetupSequence<T> ReturnsAsync()
-    {
-        var step = new SequenceStep<object> { Value = null! };
-        if (_pendingCallback != null)
-        {
-            step.ParameterCallback = _pendingCallback;
-            _pendingCallback = null;
-        }
-
-        _steps.Enqueue(step);
-        return this;
-    }
-
-    public ISetupSequence<T> ThrowsAsync<TException>() where TException : Exception, new()
-    {
-        var step = new SequenceStep<object> { Exception = new TException() };
-        if (_pendingCallback != null)
-        {
-            step.ParameterCallback = _pendingCallback;
-            _pendingCallback = null;
-        }
-
-        _steps.Enqueue(step);
-        return this;
-    }
-
-    public ISetupSequence<T> ThrowsAsync(Exception exception)
-    {
-        var step = new SequenceStep<object> { Exception = exception };
-        if (_pendingCallback != null)
-        {
-            step.ParameterCallback = _pendingCallback;
-            _pendingCallback = null;
-        }
-
-        _steps.Enqueue(step);
-        return this;
-    }
-
     public ISetupSequence<T> Callback(Action callback)
     {
-        _pendingCallback = _ => callback();
+        var step = new SequenceStep<object> { Value = callback };
+        if (_pendingCallback != null)
+        {
+            step.ParameterCallback = _pendingCallback;
+            _pendingCallback = null;
+        }
+        
+        _steps.Enqueue(step);
         return this;
     }
 
     public ISetupSequence<T> Callback(Delegate callback)
     {
-        _pendingCallback = args => callback.DynamicInvoke(args);
+        var step = new SequenceStep<object> { Value = callback };
+        if (_pendingCallback != null)
+        {
+            step.ParameterCallback = _pendingCallback;
+            _pendingCallback = null;
+        }
+        
+        _steps.Enqueue(step);
         return this;
     }
 }

@@ -24,14 +24,24 @@ internal static class MethodCallFactory
     
     private static object[] ExtractArgumentMatchers(ReadOnlyCollection<Expression> arguments)
     {
-        // For now, just extract constant values
-        // Full implementation would handle It.IsAny<T>(), etc.
         return [.. arguments.Select(arg =>
         {
-            if (arg is ConstantExpression constExpr)
-                return constExpr.Value;
-            
-            return ArgMatcher.Any; // Placeholder for argument matchers
+            try
+            {
+                // Try to evaluate the expression to get the actual value
+                if (arg is ConstantExpression constExpr)
+                    return constExpr.Value;
+                
+                // For member access expressions (like variables), compile and execute
+                var lambda = Expression.Lambda(arg);
+                var compiled = lambda.Compile();
+                return compiled.DynamicInvoke();
+            }
+            catch
+            {
+                // If we can't evaluate the expression, use wildcard matcher
+                return ArgMatcher.Any;
+            }
         })!];
     }
 }

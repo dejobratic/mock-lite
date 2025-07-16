@@ -41,27 +41,14 @@ internal class FuncSetup<T, TResult> : IMethodSetup, ISetup<T, TResult>
 
     public void Returns(Func<TResult> valueFunction)
         => _callback = valueFunction;
-
-    public void ReturnsAsync(TResult value)
-        => _callback = () => value;
-
-    public void ReturnsAsync(Func<TResult> valueFunction)
-        => _callback = valueFunction;
-
+    
     public void Throws<TException>()
         where TException : Exception, new()
         => _exception = new TException();
 
     public void Throws(Exception exception)
         => _exception = exception;
-
-    public void ThrowsAsync<TException>()
-        where TException : Exception, new()
-        => _exception = new TException();
-
-    public void ThrowsAsync(Exception exception)
-        => _exception = exception;
-
+    
     public ISetup<T, TResult> Callback(Action callback)
     {
         _simpleCallback = callback;

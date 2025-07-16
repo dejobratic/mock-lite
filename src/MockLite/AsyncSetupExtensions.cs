@@ -1,12 +1,12 @@
 namespace MockLite;
 
-internal static class AsyncSetupExtensions
+public static class AsyncSetupExtensions
 {
     public static void ReturnsAsync<T, TAsyncResult>(
         this ISetup<T, Task<TAsyncResult>> setup,
-        TAsyncResult? value = default)
+        TAsyncResult value)
     {
-        setup.Returns(Task.FromResult(value)!);
+        setup.Returns(Task.FromResult(value));
     }
 
     public static void ReturnsAsync<T, TAsyncResult>(
