@@ -1,13 +1,8 @@
 # MockLite
 
-<div style="text-align: center; margin: -24px;">
-  <img 
-    src="logo.png" 
-    alt="MockLite Logo" 
-    width="256" 
-    style="display: block; margin: 0 auto; padding: 0;" 
-  />
-</div>
+<p align="center">
+  <img src="logo.png" alt="MockLite Logo" width="256" />
+</p>
 
 [![NuGet](https://img.shields.io/nuget/v/MockLite.svg)](https://www.nuget.org/packages/MockLite/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
