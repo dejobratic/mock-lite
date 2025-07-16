@@ -1,8 +1,3 @@
-using System;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-
 namespace MockLite.Setups;
 
 internal class FuncSetup<T, TResult> : IMethodSetup, ISetup<T, TResult>

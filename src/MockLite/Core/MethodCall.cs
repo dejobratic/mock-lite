@@ -20,7 +20,15 @@ internal class MethodCall(MethodInfo method, object[] arguments)
     }
 
     private static bool ArgumentMatches(object setupArg, object callArg)
-        => setupArg == ArgMatcher.Any || Equals(setupArg, callArg);
+    {
+        if (setupArg == ArgMatcher.Any || setupArg == ItMarker.Any)
+            return true;
+            
+        if (setupArg is ItMarker.ExpressionMatcher expressionMatcher)
+            return expressionMatcher.Matches(callArg);
+            
+        return Equals(setupArg, callArg);
+    }
 
     public override bool Equals(object? obj)
         => obj is MethodCall other && Matches(other);

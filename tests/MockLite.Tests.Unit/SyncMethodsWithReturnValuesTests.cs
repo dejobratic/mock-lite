@@ -493,4 +493,78 @@ public class SyncMethodsWithReturnValuesTests
             x => x.GenerateOrderConfirmation(orderId, customerEmail, total, paymentMethod),
             Times.Between(1, 3));
     }
+
+    [Fact]
+    public void GivenSetupWithItIsAnyForOrderId_WhenCalledWithAnyOrderId_ThenSetupMatches()
+    {
+        // Arrange
+        _sut.Setup(x => x.ValidateOrder(It.IsAny<int>()))
+            .Returns(true);
+
+        // Act
+        var result1 = _sut.Object.ValidateOrder(12345);
+        var result2 = _sut.Object.ValidateOrder(99999);
+
+        // Assert
+        Assert.True(result1);
+        Assert.True(result2);
+    }
+
+    [Fact]
+    public void GivenSetupWithItIsForPositiveOrderId_WhenCalledWithPositiveOrderId_ThenSetupMatches()
+    {
+        // Arrange
+        _sut.Setup(x => x.ValidateOrder(It.Is<int>(id => id > 0)))
+            .Returns(true);
+
+        // Act
+        var actual = _sut.Object.ValidateOrder(12345);
+
+        // Assert
+        Assert.True(actual);
+    }
+
+    [Fact]
+    public void GivenSetupWithItIsForPositiveOrderId_WhenCalledWithNegativeOrderId_ThenSetupDoesNotMatch()
+    {
+        // Arrange
+        _sut.Setup(x => x.ValidateOrder(It.Is<int>(id => id > 0)))
+            .Returns(true);
+
+        // Act
+        var actual = _sut.Object.ValidateOrder(-123);
+
+        // Assert
+        Assert.False(actual); // Default value
+    }
+
+    [Fact]
+    public void GivenSetupWithSpecificOrderIdAndItIsAnyForValidation_WhenCalledWithSpecificOrderId_ThenSetupMatches()
+    {
+        // Arrange
+        const int specificOrderId = 12345;
+        
+        _sut.Setup(x => x.ValidateOrder(specificOrderId))
+            .Returns(true);
+
+        // Act
+        var actual = _sut.Object.ValidateOrder(specificOrderId);
+
+        // Assert
+        Assert.True(actual);
+    }
+
+    [Fact]
+    public void GivenSetupWithMixedMatchersForShipping_WhenCalledWithMatchingValues_ThenSetupMatches()
+    {
+        // Arrange
+        _sut.Setup(x => x.CalculateShipping(It.Is<decimal>(w => w > 0), It.IsAny<string>()))
+            .Returns(25.99m);
+
+        // Act
+        var actual = _sut.Object.CalculateShipping(5.0m, "California");
+
+        // Assert
+        Assert.Equal(25.99m, actual);
+    }
 }

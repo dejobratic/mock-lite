@@ -1,5 +1,14 @@
 # MockLite
 
+<div style="text-align: center; margin: -24px;">
+  <img 
+    src="logo.png" 
+    alt="MockLite Logo" 
+    width="256" 
+    style="display: block; margin: 0 auto; padding: 0;" 
+  />
+</div>
+
 [![NuGet](https://img.shields.io/nuget/v/MockLite.svg)](https://www.nuget.org/packages/MockLite/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -8,12 +17,13 @@ MockLite is a lightweight, fast, and easy-to-use mocking framework for .NET with
 ## Features
 
 - 🚀 **Lightweight and Fast** - Minimal overhead with dynamic proxy generation
-- 🎯 **Simple API** - Clean, fluent interface that's easy to learn and use
+- 🎯 **Simple API** - Clean, fluent interface that's straightforward to learn and use
 - 🔧 **Method Mocking** - Mock methods with return values, callbacks, and exceptions
 - 📚 **Sequential Setups** - Define different behaviors for successive calls
 - 🏠 **Property Mocking** - Mock property getters and setters
 - ⚡ **Async Support** - First-class support for async methods and Tasks
 - ✅ **Verification** - Verify method calls with flexible timing constraints
+- 🎯 **Argument Matchers** - Use `It.IsAny<T>()` and `It.Is<T>(expression)` for flexible parameter matching
 - 🎪 **No Dependencies** - Zero external dependencies
 
 ## Installation
@@ -75,7 +85,7 @@ mock.Setup(x => x.ProcessPayment(0, "invalid-card"))
 // Mock void method with callback
 var loggedTransactions = new List<string>();
 mock.Setup(x => x.LogTransaction("TXN-123"))
-    .Callback<string>(id => loggedTransactions.Add(id));
+    .Callback((string id) => loggedTransactions.Add(id));
 ```
 
 ### Property Mocking
@@ -203,6 +213,44 @@ mock.Setup(x => x.ValidateUser("john_doe"))
     .Callback((string username) => Console.WriteLine($"Validating user: {username}"));
 ```
 
+### Argument Matchers
+
+Use `It.IsAny<T>()` and `It.Is<T>(expression)` for flexible parameter matching:
+
+```csharp
+public interface IOrderService
+{
+    bool ValidateOrder(int orderId);
+    decimal CalculateShipping(decimal weight, string destination);
+    void ProcessOrder(Order order);
+}
+
+var mock = new Mock<IOrderService>();
+
+// Match any integer value
+mock.Setup(x => x.ValidateOrder(It.IsAny<int>()))
+    .Returns(true);
+
+// Match based on condition
+mock.Setup(x => x.ValidateOrder(It.Is<int>(id => id > 0)))
+    .Returns(true);
+
+// Mix specific values with matchers
+mock.Setup(x => x.CalculateShipping(It.Is<decimal>(w => w > 0), It.IsAny<string>()))
+    .Returns(15.99m);
+
+// Complex conditions
+mock.Setup(x => x.CalculateShipping(
+        It.Is<decimal>(weight => weight > 0 && weight < 100),
+        It.Is<string>(dest => dest.StartsWith("US"))))
+    .Returns(12.50m);
+
+// Test the setups
+var result1 = mock.Object.ValidateOrder(123);     // Returns true (matches It.IsAny<int>())
+var result2 = mock.Object.ValidateOrder(-1);      // Returns false (doesn't match It.Is<int>(id => id > 0))
+var shipping = mock.Object.CalculateShipping(5.0m, "US-CA"); // Returns 12.50m
+```
+
 ### Real-World E-commerce Example
 
 ```csharp
@@ -301,6 +349,13 @@ public async Task ProcessOrderWithNotificationAsync_WhenInventoryAvailableAndPro
 
 ## API Reference
 
+### It Class
+
+Use the `It` class for flexible argument matching in setups:
+
+- `It.IsAny<T>()` - Matches any value of type T
+- `It.Is<T>(expression)` - Matches values that satisfy the given predicate
+
 ### Times Class
 
 Use the `Times` class to specify call count expectations:
@@ -332,9 +387,8 @@ Use the `Times` class to specify call count expectations:
 
 ## Limitations
 
-- Only supports interface mocking (not concrete classes)
+- Only supports interface mocking (not concrete classes)  
 - Requires .NET 8.0 or later
-- Uses exact parameter matching (no built-in argument matchers like `It.IsAny<T>()`)
 
 ## Contributing
 
@@ -342,4 +396,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License—see the [LICENSE](LICENSE) file for details.
