@@ -27,6 +27,12 @@ internal class MethodCall(MethodInfo method, object[] arguments)
         if (setupArg is ItMarker.ExpressionMatcher expressionMatcher)
             return expressionMatcher.Matches(callArg);
             
+        if (callArg == ArgMatcher.Any || callArg == ItMarker.Any)
+            return true;
+            
+        if (callArg is ItMarker.ExpressionMatcher callExpressionMatcher)
+            return callExpressionMatcher.Matches(setupArg);
+            
         return Equals(setupArg, callArg);
     }
 

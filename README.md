@@ -379,10 +379,11 @@ Use the `Times` class to specify call count expectations:
 - `Throws<T>()` - Throw exception of type T
 - `Throws(exception)` - Throw specific exception instance
 - `Callback(action)` - Execute callback when method is called
+- `Callback(delegate)` - Execute callback when a method is called
 
 ## Limitations
 
-- Only supports interface mocking (not concrete classes)  
+- Only supports interface and abstract class mocking (not concrete classes)  
 - Requires .NET 8.0 or later
 
 ## Contributing
