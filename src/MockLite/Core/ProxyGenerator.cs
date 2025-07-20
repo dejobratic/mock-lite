@@ -86,9 +86,17 @@ public static class ProxyGenerator
         
         var methodBuilder = typeBuilder.DefineMethod(
             method.Name,
-            MethodAttributes.Public | MethodAttributes.Virtual,
+            MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.Final | MethodAttributes.NewSlot,
+            CallingConventions.Standard,
             method.ReturnType,
             parameterTypes);
+        
+        // Define parameters with their names and attributes
+        for (var i = 0; i < parameters.Length; i++)
+        {
+            var param = parameters[i];
+            methodBuilder.DefineParameter(i + 1, param.Attributes, param.Name);
+        }
         
         var il = methodBuilder.GetILGenerator();
         
@@ -99,7 +107,7 @@ public static class ProxyGenerator
         il.Emit(OpCodes.Stloc, argsLocal);
         
         // Fill arguments array
-        for (int i = 0; i < parameters.Length; i++)
+        for (var i = 0; i < parameters.Length; i++)
         {
             il.Emit(OpCodes.Ldloc, argsLocal);
             il.Emit(OpCodes.Ldc_I4, i);

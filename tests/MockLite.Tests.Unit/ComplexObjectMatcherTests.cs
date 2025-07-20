@@ -5,20 +5,20 @@ public class ComplexObjectMatcherTests
 {
     public class Order
     {
-        public int Id { get; set; }
-        public string? CustomerName { get; set; }
-        public decimal TotalAmount { get; set; }
+        public int Id { get; init; }
+        public string? CustomerName { get; init; }
+        public decimal TotalAmount { get; init; }
         public DateTime OrderDate { get; set; }
-        public bool IsProcessed { get; set; }
+        public bool IsProcessed { get; init; }
     }
 
     public class Customer
     {
         public int Id { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public bool IsActive { get; set; }
-        public decimal CreditLimit { get; set; }
+        public string? Name { get; set; }
+        public string? Email { get; init; }
+        public bool IsActive { get; init; }
+        public decimal CreditLimit { get; init; }
     }
 
     public interface IOrderService
@@ -26,8 +26,6 @@ public class ComplexObjectMatcherTests
         bool ValidateOrder(Order order);
         
         decimal CalculateDiscount(Order order, Customer customer);
-        
-        string ProcessOrder(Order order);
         
         bool NotifyCustomer(Customer customer, string message);
     }
@@ -414,7 +412,7 @@ public class ComplexObjectMatcherTests
     public void GivenSetupWithItIsForCustomerEmail_WhenCalledWithMatchingEmailDomain_ThenSetupMatches()
     {
         // Arrange
-        _sut.Setup(x => x.NotifyCustomer(It.Is<Customer>(c => c.Email.EndsWith("@example.com")), It.IsAny<string>()))
+        _sut.Setup(x => x.NotifyCustomer(It.Is<Customer>(c => c.Email!.EndsWith("@example.com")), It.IsAny<string>()))
             .Returns(true);
 
         var customer = new Customer
@@ -437,7 +435,7 @@ public class ComplexObjectMatcherTests
     public void GivenSetupWithItIsForCustomerEmail_WhenCalledWithNonMatchingEmailDomain_ThenSetupDoesNotMatch()
     {
         // Arrange
-        _sut.Setup(x => x.NotifyCustomer(It.Is<Customer>(c => c.Email.EndsWith("@example.com")), It.IsAny<string>()))
+        _sut.Setup(x => x.NotifyCustomer(It.Is<Customer>(c => c.Email!.EndsWith("@example.com")), It.IsAny<string>()))
             .Returns(true);
 
         var customer = new Customer
