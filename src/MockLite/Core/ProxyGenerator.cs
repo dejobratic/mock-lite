@@ -91,6 +91,14 @@ public static class ProxyGenerator
             method.ReturnType,
             parameterTypes);
         
+        // Handle generic methods
+        if (method.IsGenericMethodDefinition)
+        {
+            var genericArguments = method.GetGenericArguments();
+            var genericParameterNames = genericArguments.Select(arg => arg.Name).ToArray();
+            methodBuilder.DefineGenericParameters(genericParameterNames);
+        }
+        
         // Define parameters with their names and attributes
         for (var i = 0; i < parameters.Length; i++)
         {
@@ -125,7 +133,8 @@ public static class ProxyGenerator
         
         // Load MethodInfo
         il.Emit(OpCodes.Ldtoken, method);
-        il.Emit(OpCodes.Call, typeof(MethodBase).GetMethod(nameof(MethodBase.GetMethodFromHandle), [typeof(RuntimeMethodHandle) ])!);
+        il.Emit(OpCodes.Ldtoken, method.DeclaringType!);
+        il.Emit(OpCodes.Call, typeof(MethodBase).GetMethod(nameof(MethodBase.GetMethodFromHandle), [typeof(RuntimeMethodHandle), typeof(RuntimeTypeHandle) ])!);
         il.Emit(OpCodes.Castclass, typeof(MethodInfo));
         
         // Load args array
