@@ -38,7 +38,8 @@ public class RefOutParameterTests
     public void GivenNoSetup_WhenCallingMethodWithRefParameter_ThenDoesNotModifyValue()
     {
         // Arrange
-        var originalValue = 42;
+        const int originalValue = 42;
+        
         var value = originalValue;
 
         // Act
@@ -70,4 +71,8 @@ public class RefOutParameterTests
         Assert.Null(outValue1);
         Assert.Null(outValue2);
     }
+
+    // Note: MockLite currently has limited ref/out parameter support.
+    // Advanced scenarios like setting up ref/out parameter values are not yet implemented.
+    // The framework can create proxies with ref/out methods but only returns default values.
 }

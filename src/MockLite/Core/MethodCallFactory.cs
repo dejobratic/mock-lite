@@ -9,7 +9,6 @@ internal static class MethodCallFactory
     public static MethodCall Create(LambdaExpression expression)
     {
         // Parse the expression tree to extract method info and arguments
-        // This is a simplified version - full implementation would handle more cases
         return expression.Body switch
         {
             MethodCallExpression methodCall
@@ -18,7 +17,15 @@ internal static class MethodCallFactory
             MemberExpression { Member: PropertyInfo prop }
                 => new MethodCall(prop.GetGetMethod()!, []),
 
-            _ => throw new ArgumentException("Unsupported expression type")
+            // Handle indexer access (indexers are special properties)
+            IndexExpression indexExpr when indexExpr.Indexer != null
+                => new MethodCall(indexExpr.Indexer.GetGetMethod()!, ExtractArgumentMatchers(indexExpr.Arguments)),
+
+            // Handle binary expressions like indexer assignment (for SetupSet)
+            BinaryExpression { NodeType: ExpressionType.Assign, Left: IndexExpression indexExpr } when indexExpr.Indexer != null
+                => new MethodCall(indexExpr.Indexer.GetSetMethod()!, ExtractArgumentMatchers(indexExpr.Arguments)),
+
+            _ => throw new ArgumentException($"Unsupported expression type: {expression.Body.GetType().Name}")
         };
     }
     

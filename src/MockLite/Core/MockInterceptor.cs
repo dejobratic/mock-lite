@@ -1,5 +1,7 @@
+using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using System.Reflection;
+using MockLite.Core;
 using MockLite.Exceptions;
 using MockLite.Setups;
 
@@ -20,9 +22,14 @@ public class MockInterceptor
         {
             _calls.Add(methodCall);
 
-            return _setups.TryGetValue(methodCall, out var setup)
-                ? setup.Execute(args)
-                : GetDefaultValue(method.ReturnType)!; // Return default value for the return type
+            // Try to find a matching setup
+            var matchingSetup = _setups.FirstOrDefault(kvp => methodCall.Matches(kvp.Key));
+            if (matchingSetup.Key != null)
+            {
+                return matchingSetup.Value.Execute(args);
+            }
+
+            return GetDefaultValue(method.ReturnType)!; // Return default value for the return type
         }
     }
 
@@ -60,15 +67,80 @@ public class MockInterceptor
     
     private static MethodCall ParseExpressionForSetter(LambdaExpression expression)
     {
-        if (expression.Body is not MemberExpression { Member: PropertyInfo prop })
-            throw new ArgumentException("SetupSet requires a property expression");
+        return expression.Body switch
+        {
+            // Handle regular properties
+            MemberExpression { Member: PropertyInfo prop } =>
+                CreateSetterMethodCall(prop.GetSetMethod(), prop.Name, []),
+            
+            // Handle indexers (they appear as method calls to get_Item)
+            MethodCallExpression methodCall when methodCall.Method.Name.StartsWith("get_") =>
+                HandleGetterMethodCallForSetter(methodCall),
+            
+            // Handle indexers using IndexExpression (alternative syntax)
+            IndexExpression indexExpr when indexExpr.Indexer != null =>
+                CreateSetterMethodCall(indexExpr.Indexer.GetSetMethod(), "indexer", 
+                    ExtractArgumentMatchersForSetter(indexExpr.Arguments)),
+            
+            _ => throw new ArgumentException("SetupSet requires a property or indexer expression")
+        };
+    }
+    
+    private static MethodCall HandleGetterMethodCallForSetter(MethodCallExpression methodCall)
+    {
+        // For indexers: get_Item -> set_Item
+        // For properties: get_PropertyName -> set_PropertyName
+        var getterName = methodCall.Method.Name;
+        var setterName = getterName.Replace("get_", "set_");
         
-        var setMethod = prop.GetSetMethod()
-            ?? throw new ArgumentException($"Property '{prop.Name}' does not have a setter");
+        // Find the corresponding setter method
+        var setterMethod = methodCall.Method.DeclaringType?.GetMethod(setterName);
+        if (setterMethod == null)
+            throw new ArgumentException($"No setter method found for '{getterName}'");
         
-        // Property setters accept one parameter (the value), use wildcard matching
-        return new MethodCall(setMethod, [ArgMatcher.Any]);
+        // Extract arguments from the getter call
+        var args = ExtractArgumentMatchersForSetter(methodCall.Arguments);
+        
+        return CreateSetterMethodCall(setterMethod, getterName.Replace("get_", ""), args);
+    }
+    
+    private static MethodCall CreateSetterMethodCall(MethodInfo? setMethod, string memberName, object[] args)
+    {
+        if (setMethod == null)
+            throw new ArgumentException($"Property '{memberName}' does not have a setter");
+            
+        // Add the value parameter (always use Any matcher for the value being set)
+        var allArgs = args.Concat([ArgMatcher.Any]).ToArray();
+        return new MethodCall(setMethod, allArgs);
+    }
+    
+    private static object[] ExtractArgumentMatchersForSetter(ReadOnlyCollection<Expression> arguments)
+    {
+        return [.. arguments.Select(arg =>
+        {
+            try
+            {
+                // Handle constants and simple expressions
+                switch (arg)
+                {
+                    case ConstantExpression constExpr:
+                        return constExpr.Value;
+                    
+                    case MethodCallExpression { Method.DeclaringType.Name: "It" }:
+                        return ArgMatcher.Any;
+                }
 
+                // For other expressions, try to evaluate them
+                var lambda = Expression.Lambda(arg);
+                var compiled = lambda.Compile();
+                return compiled.DynamicInvoke();
+            }
+            catch
+            {
+                // If we can't evaluate the expression, use wildcard matcher
+                return ArgMatcher.Any;
+            }
+        })!];
     }
 
     public void Verify<T>(Expression<Action<T>> expression, Times times)
